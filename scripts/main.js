@@ -142,6 +142,7 @@ function gridItem(p) {
             </div>
             <div class="product-info">
                 <h3 class="product-name">${p.name}</h3>
+                ${p.size ? `<p class="product-size" style="font-size:11px;color:var(--text-secondary);margin-bottom:5px;">T: ${p.size}</p>` : ''}
                 <p class="product-price">${p.price_eur}€</p>
                 ${badge}
             </div>
@@ -180,38 +181,11 @@ function openModal(id) {
         ? `imagens_produtos/${imgMap[p.id]}` 
         : null;
     
-    if (p.tipo === 'drop') {
-        // For drops, show 3D viewer (if available) or image
-        // Check if product is Pure Money (example for 3D model)
-        // Check if 3D model exists for this drop product
-        const isPureMoney = p.name.toLowerCase().includes('pure money') || p.name.toLowerCase().includes('puremoney');
-        if (isPureMoney) {
-            // Try to load 3D model - if it fails, fallback to image
-            mdImg.innerHTML = `
-                <model-viewer 
-                    src="3d/puremoney.glb" 
-                    alt="${p.name}"
-                    auto-rotate
-                    camera-controls
-                    style="width:100%;height:360px;border-radius:12px;"
-                    onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
-                </model-viewer>
-                <div style="display:none;flex-direction:column;align-items:center;justify-content:center;height:360px;">
-                    ${imagePath ? `<img src="${imagePath}" alt="${p.name}" style="width:100%;height:100%;object-fit:contain;">` : '<div class="product-placeholder" style="height:360px;">👟<br><small>Imagem em atualização</small></div>'}
-                </div>
-            `;
-        } else if (imagePath) {
-            mdImg.innerHTML = `<img src="${imagePath}" alt="${p.name}" style="width:100%;height:100%;object-fit:contain;">`;
-        } else {
-            mdImg.innerHTML = '<div class="product-placeholder" style="height:360px;">👟<br><small>Imagem em atualização</small></div>';
-        }
+    // Show image (removed 3D viewer support)
+    if (imagePath) {
+        mdImg.innerHTML = `<img src="${imagePath}" alt="${p.name}" style="width:100%;height:100%;object-fit:contain;">`;
     } else {
-        // For stock items, show image
-        if (imagePath) {
-            mdImg.innerHTML = `<img src="${imagePath}" alt="${p.name}" style="width:100%;height:100%;object-fit:contain;">`;
-        } else {
-            mdImg.innerHTML = '<div class="product-placeholder" style="height:360px;">👟<br><small>Imagem em atualização</small></div>';
-        }
+        mdImg.innerHTML = '<div class="product-placeholder" style="height:360px;">👟<br><small>Imagem em atualização</small></div>';
     }
     
     // Show modal
@@ -242,7 +216,7 @@ function reserveProduct() {
     if (!currentProduct) return;
     
     const name = currentProduct.name;
-    const msg = encodeURIComponent(`Olá, quero reservar o produto ${name}. Podes enviar fotos reais antes do envio?`);
+    const msg = encodeURIComponent(`Olá STREETMOOD 👟 quero reservar o ${name}. Podes enviar fotos reais antes do envio?`);
     window.open(`https://wa.me/${WHATSAPP_NUMBER}?text=${msg}`, '_blank');
 }
 

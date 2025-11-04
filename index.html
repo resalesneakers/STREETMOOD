@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="pt-PT">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>STREETMOOD — Catálogo Premium</title>
+    
+    <!-- Google Fonts - Montserrat -->
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+    
+    <!-- Model Viewer for 3D Products -->
+    <script type="module" src="https://unpkg.com/@google/model-viewer/dist/model-viewer.min.js"></script>
+    
+    <!-- Styles -->
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <!-- Header -->
+    <header class="header">
+        <div class="container">
+            <div class="header-content">
+                <div class="logo-section">
+                    <div class="logo">SM</div>
+                    <div class="brand">
+                        <h1>STREETMOOD</h1>
+                        <p class="tagline">Qualquer vibe, qualquer ocasião.</p>
+                    </div>
+                </div>
+                <button onclick="openWhatsApp()" class="btn-whatsapp">
+                    💬 WhatsApp
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="main-content">
+        <div class="container">
+            <!-- Filters Section -->
+            <div class="filters-section">
+                <div class="search-box">
+                    <input 
+                        type="text" 
+                        id="q" 
+                        placeholder="🔍 Pesquisar produto..." 
+                        class="search-input"
+                        oninput="render()"
+                    >
+                </div>
+                <select id="filter" class="filter-select" onchange="render()">
+                    <option value="all">Todos os produtos</option>
+                    <option value="stock">Em Stock</option>
+                    <option value="drop">Fresh Drops</option>
+                </select>
+                <select id="sort" class="filter-select" onchange="render()">
+                    <option value="name">Ordenar por nome</option>
+                    <option value="price-asc">Preço: menor → maior</option>
+                    <option value="price-desc">Preço: maior → menor</option>
+                </select>
+            </div>
+
+            <!-- Products Grid -->
+            <div id="grid" class="products-grid">
+                <!-- Products will be rendered here -->
+            </div>
+
+            <!-- Info Tags -->
+            <div class="info-tags">
+                <div class="info-tag">🚚 Envio grátis</div>
+                <div class="info-tag">📦 Caixa STREETMOOD incluída</div>
+                <div class="info-tag">+5€ por caixa original</div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-brand">
+                    <p class="footer-title">STREETMOOD</p>
+                    <p class="footer-subtitle">Vibes, drops e amor ao estilo.</p>
+                </div>
+                <div class="footer-links">
+                    <a href="https://instagram.com/streetm00d_" target="_blank" class="footer-link">Instagram</a>
+                    <a href="https://wa.me/351912345678" target="_blank" class="footer-link">WhatsApp</a>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Product Modal -->
+    <div id="modal" class="modal">
+        <div class="modal-overlay" onclick="closeModal()"></div>
+        <div class="modal-content">
+            <button class="modal-close" onclick="closeModal()">&times;</button>
+            
+            <div class="modal-body">
+                <!-- Product Image/3D Viewer -->
+                <div id="mdImg" class="modal-image">
+                    <!-- Image or 3D viewer will be inserted here -->
+                </div>
+
+                <!-- Product Details -->
+                <div class="modal-details">
+                    <h2 id="mdName" class="modal-title"></h2>
+                    <div id="mdBadge" class="modal-badge"></div>
+                    <p id="mdPrice" class="modal-price"></p>
+                    <p id="mdDesc" class="modal-description"></p>
+
+                    <!-- Action Buttons -->
+                    <div class="modal-actions">
+                        <button onclick="contactSeller()" class="btn-primary btn-buy">
+                            💬 Comprar / DM
+                        </button>
+                        <button onclick="reserveProduct()" class="btn-secondary btn-reserve">
+                            📌 Reservar
+                        </button>
+                    </div>
+
+                    <!-- Product Info -->
+                    <div class="modal-info">
+                        <p>✓ Envio grátis • Caixa STREETMOOD incluída</p>
+                        <p>✓ Caixa original disponível (+5€)</p>
+                        <p>✓ Fotos antes do envio</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="scripts/main.js"></script>
+    <!-- Load products - will be used by main.js -->
+    <script src="all_products_output.js"></script>
+</body>
+</html>
+

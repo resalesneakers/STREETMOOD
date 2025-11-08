@@ -4,14 +4,24 @@ let products = [];
 let imgMap = {};
 let currentProduct = null;
 
-// WhatsApp number (update with your actual number)
-const WHATSAPP_NUMBER = '351912345678';
+// WhatsApp number oficial STREETMOOD
+const WHATSAPP_NUMBER = '351929461628';
+const INSTAGRAM_URL = 'https://instagram.com/streetm00d_';
 
 // Initialize the application
 async function init() {
     try {
         // Load image mapping
-        imgMap = await fetch('streetmood_images_mapping.json').then(r => r.json());
+        try {
+            imgMap = await fetch('streetmood_images_mapping.json').then(r => {
+                if (!r.ok) throw new Error('Ficheiro não encontrado');
+                return r.json();
+            });
+            console.log('✅ Mapeamento de imagens carregado:', Object.keys(imgMap).length, 'mapeamentos');
+        } catch (error) {
+            console.warn('⚠️ Erro ao carregar mapeamento de imagens:', error);
+            imgMap = {}; // Continuar sem mapeamento
+        }
         
         // Load products from external file
         // Products should be loaded from all_products_output.js (loaded in HTML)
@@ -28,14 +38,30 @@ async function init() {
         }
         
         // Process products: add images from mapping
+        // Garantir que todos os produtos são processados corretamente
         products.forEach(p => {
+            // Verificar se produto tem ID válido
+            if (!p.id) {
+                console.warn('Produto sem ID:', p);
+                return;
+            }
+            
             const imageFile = imgMap[p.id];
             if (imageFile && imageFile.trim() !== '') {
                 p.image = 'imagens_produtos/' + imageFile;
             } else {
                 p.image = null;
             }
+            
+            // Garantir que campos obrigatórios existem
+            if (!p.price_eur) p.price_eur = 70;
+            if (!p.size) p.size = "Tamanhos variados";
+            if (!p.tipo) p.tipo = "stock";
+            if (!p.desc) p.desc = "Estado: Novo. Envio grátis. Caixa STREETMOOD incluída.";
         });
+        
+        console.log(`✅ Carregados ${products.length} produtos`);
+        console.log(`✅ ${Object.keys(imgMap).length} produtos com imagens mapeadas`);
         
         // Initial render
         render();
@@ -77,40 +103,58 @@ function loadDefaultProducts() {
 
 // Render function - main rendering logic
 function render() {
-    const q = document.getElementById('q').value.toLowerCase();
-    const f = document.getElementById('filter').value;
-    const s = document.getElementById('sort').value;
+    const q = document.getElementById('q')?.value?.toLowerCase() || '';
+    const f = document.getElementById('filter')?.value || 'all';
+    const s = document.getElementById('sort')?.value || 'name';
+    
+    // Garantir que products está carregado
+    if (!products || products.length === 0) {
+        console.warn('Nenhum produto carregado ainda');
+        return;
+    }
     
     let list = products.slice();
     
     // Filter by type
-    if (f === 'stock') list = list.filter(x => x.tipo === 'stock');
-    if (f === 'drop') list = list.filter(x => x.tipo === 'drop');
+    if (f === 'stock') {
+        list = list.filter(x => x.tipo === 'stock');
+    } else if (f === 'drop') {
+        list = list.filter(x => x.tipo === 'drop');
+    }
+    // Se f === 'all', não filtrar
     
     // Search filter
     if (q) {
-        list = list.filter(x => 
-            (x.name + ' ' + (x.size || '')).toLowerCase().includes(q)
-        );
+        list = list.filter(x => {
+            const searchText = (x.name + ' ' + (x.size || '') + ' ' + (x.tipo || '')).toLowerCase();
+            return searchText.includes(q);
+        });
     }
     
     // Sort
     if (s === 'price-asc') {
-        list.sort((a, b) => a.price_eur - b.price_eur);
+        list.sort((a, b) => (a.price_eur || 0) - (b.price_eur || 0));
     } else if (s === 'price-desc') {
-        list.sort((a, b) => b.price_eur - a.price_eur);
+        list.sort((a, b) => (b.price_eur || 0) - (a.price_eur || 0));
     } else if (s === 'name') {
-        list.sort((a, b) => a.name.localeCompare(b.name));
+        list.sort((a, b) => (a.name || '').localeCompare(b.name || ''));
     }
     
     // Render grid
     const grid = document.getElementById('grid');
+    if (!grid) {
+        console.error('Elemento #grid não encontrado');
+        return;
+    }
+    
     if (list.length === 0) {
         grid.innerHTML = '<div class="no-products" style="grid-column:1/-1;text-align:center;padding:60px;color:var(--text-secondary);">Nenhum produto encontrado.</div>';
         return;
     }
     
     grid.innerHTML = list.map(gridItem).join('');
+    
+    console.log(`✅ Renderizados ${list.length} produtos de ${products.length} totais`);
 }
 
 // Render single product card
@@ -129,10 +173,15 @@ function gridItem(p) {
             <img src="${imagePath}" 
                  alt="${p.name}" 
                  class="product-image"
-                 onerror="this.parentElement.innerHTML='<div class=\\'product-placeholder\\'>👟</div>'">
+                 onerror="this.parentElement.innerHTML='<div class=\\'product-placeholder\\'><div class=\\'placeholder-icon\\'>👟</div><p class=\\'placeholder-text\\'>🚫 Ainda sem foto — entra em contacto para saber mais!</p></div>'">
         `;
     } else {
-        imageHTML = '<div class="product-placeholder">👟</div>';
+        imageHTML = `
+            <div class="product-placeholder">
+                <div class="placeholder-icon">👟</div>
+                <p class="placeholder-text">🚫 Ainda sem foto — entra em contacto para saber mais!</p>
+            </div>
+        `;
     }
     
     return `
@@ -183,9 +232,14 @@ function openModal(id) {
     
     // Show image (removed 3D viewer support)
     if (imagePath) {
-        mdImg.innerHTML = `<img src="${imagePath}" alt="${p.name}" style="width:100%;height:100%;object-fit:contain;">`;
+        mdImg.innerHTML = `<img src="${imagePath}" alt="${p.name}" style="width:100%;height:100%;object-fit:contain;" onerror="this.parentElement.innerHTML='<div class=\\'product-placeholder\\' style=\\'height:360px;\\'><div class=\\'placeholder-icon\\' style=\\'font-size:64px;\\'>👟</div><p class=\\'placeholder-text\\'>🚫 Ainda sem foto — entra em contacto para saber mais!</p></div>'">`;
     } else {
-        mdImg.innerHTML = '<div class="product-placeholder" style="height:360px;">👟<br><small>Imagem em atualização</small></div>';
+        mdImg.innerHTML = `
+            <div class="product-placeholder" style="height:360px;">
+                <div class="placeholder-icon" style="font-size:64px;">👟</div>
+                <p class="placeholder-text">🚫 Ainda sem foto — entra em contacto para saber mais!</p>
+            </div>
+        `;
     }
     
     // Show modal
@@ -206,8 +260,8 @@ function contactSeller() {
     if (!currentProduct) return;
     
     const name = currentProduct.name;
-    const price = currentProduct.price_eur;
-    const msg = encodeURIComponent(`Olá STREETMOOD, quero saber mais sobre o ${name} (${price}€).`);
+    const size = currentProduct.size || '';
+    const msg = encodeURIComponent(`Olá STREETMOOD 👟 quero comprar o ${name}${size ? ' (T:' + size + ')' : ''} ainda está disponível?`);
     window.open(`https://wa.me/${WHATSAPP_NUMBER}?text=${msg}`, '_blank');
 }
 

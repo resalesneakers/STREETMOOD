@@ -24,18 +24,75 @@ async function init() {
         }
         
         // Load products from external file
-        // Products should be loaded from all_products_output.js (loaded in HTML)
-        if (typeof window.products !== 'undefined') {
+        // Products should be loaded from all_products_output.js (loaded in HTML BEFORE this script)
+        if (typeof window.products !== 'undefined' && Array.isArray(window.products)) {
             products = window.products;
+            console.log('✅ Produtos carregados de window.products:', products.length);
+        } else if (typeof products !== 'undefined' && Array.isArray(products)) {
+            // Tentar variável global products (sem window)
+            window.products = products;
+            products = products;
+            console.log('✅ Produtos carregados de products:', products.length);
         } else {
-            // Fallback: load from scripts/products.js
-            try {
-                await loadProductsFromFile('scripts/products.js');
-            } catch (e) {
-                console.warn('Could not load products from file, using default products');
-                loadDefaultProducts();
+            // Aguardar um pouco para garantir que o script foi carregado
+            console.warn('⚠️ Aguardando carregamento de produtos...');
+            let attempts = 0;
+            const maxAttempts = 50;
+            while ((typeof window.products === 'undefined' && typeof products === 'undefined') && attempts < maxAttempts) {
+                await new Promise(resolve => setTimeout(resolve, 50));
+                attempts++;
+            }
+            
+            if (typeof window.products !== 'undefined' && Array.isArray(window.products)) {
+                products = window.products;
+                console.log('✅ Produtos carregados após espera:', products.length);
+            } else if (typeof products !== 'undefined' && Array.isArray(products)) {
+                window.products = products;
+                console.log('✅ Produtos carregados após espera (variável global):', products.length);
+            } else {
+                console.error('❌ ERRO: Produtos não encontrados! Tentando carregar via fetch...');
+                
+                // Tentar carregar diretamente via fetch
+                try {
+                    const response = await fetch('all_products_output.js');
+                    if (response.ok) {
+                        const text = await response.text();
+                        // Executar o código JavaScript de forma segura
+                        const script = document.createElement('script');
+                        script.textContent = text;
+                        document.head.appendChild(script);
+                        
+                        // Aguardar um pouco mais
+                        await new Promise(resolve => setTimeout(resolve, 200));
+                        
+                        if (typeof window.products !== 'undefined' && Array.isArray(window.products)) {
+                            products = window.products;
+                            console.log('✅ Produtos carregados via fetch:', products.length);
+                        } else if (typeof products !== 'undefined' && Array.isArray(products)) {
+                            window.products = products;
+                            products = products;
+                            console.log('✅ Produtos carregados via fetch (variável global):', products.length);
+                        } else {
+                            throw new Error('Produtos não encontrados após carregar script');
+                        }
+                    } else {
+                        throw new Error('Ficheiro all_products_output.js não encontrado');
+                    }
+                } catch (e) {
+                    console.error('❌ Erro ao carregar produtos:', e);
+                    console.warn('⚠️ Usando produtos padrão...');
+                    loadDefaultProducts();
+                }
             }
         }
+        
+        // Verificar se produtos foram carregados
+        if (!products || products.length === 0) {
+            console.error('❌ ERRO: Nenhum produto foi carregado!');
+            loadDefaultProducts();
+        }
+        
+        console.log('📦 Total de produtos carregados:', products.length);
         
         // Process products: add images from mapping
         // Garantir que todos os produtos são processados corretamente
@@ -63,8 +120,10 @@ async function init() {
         console.log(`✅ Carregados ${products.length} produtos`);
         console.log(`✅ ${Object.keys(imgMap).length} produtos com imagens mapeadas`);
         
-        // Initial render
-        render();
+        // Initial render - aguardar um pouco para garantir que DOM está pronto
+        setTimeout(() => {
+            render();
+        }, 100);
         
     } catch (error) {
         console.error('Error initializing:', error);
@@ -152,9 +211,13 @@ function render() {
         return;
     }
     
-    grid.innerHTML = list.map(gridItem).join('');
-    
-    console.log(`✅ Renderizados ${list.length} produtos de ${products.length} totais`);
+    try {
+        grid.innerHTML = list.map(gridItem).join('');
+        console.log(`✅ Renderizados ${list.length} produtos de ${products.length} totais`);
+    } catch (error) {
+        console.error('❌ Erro ao renderizar produtos:', error);
+        grid.innerHTML = '<div class="no-products" style="grid-column:1/-1;text-align:center;padding:60px;color:var(--text-secondary);">Erro ao carregar produtos. Por favor, recarrega a página.</div>';
+    }
 }
 
 // Render single product card
@@ -295,10 +358,51 @@ document.addEventListener('click', (e) => {
     }
 });
 
-// Initialize when DOM is ready
-if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', init);
-} else {
-    init();
+// Initialize when DOM is ready AND products are loaded
+function startInit() {
+    console.log('🚀 Iniciando aplicação STREETMOOD...');
+    console.log('📄 DOM ready:', document.readyState);
+    console.log('📦 window.products:', typeof window.products !== 'undefined' ? window.products.length + ' produtos' : 'não definido');
+    console.log('📦 products (global):', typeof products !== 'undefined' ? products.length + ' produtos' : 'não definido');
+    
+    // Aguardar que o DOM esteja pronto E que os produtos estejam carregados
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', () => {
+            // Aguardar um pouco mais para garantir que all_products_output.js foi carregado
+            setTimeout(() => {
+                init().catch(error => {
+                    console.error('❌ Erro fatal ao inicializar:', error);
+                    // Tentar renderizar mesmo assim se produtos estiverem disponíveis
+                    setTimeout(() => {
+                        if (products && products.length > 0) {
+                            console.log('🔄 Tentando renderizar produtos disponíveis...');
+                            render();
+                        } else {
+                            console.error('❌ Não foi possível carregar produtos');
+                        }
+                    }, 500);
+                });
+            }, 200);
+        });
+    } else {
+        // DOM já está pronto, aguardar um pouco para garantir que produtos foram carregados
+        setTimeout(() => {
+            init().catch(error => {
+                console.error('❌ Erro fatal ao inicializar:', error);
+                // Tentar renderizar mesmo assim se produtos estiverem disponíveis
+                setTimeout(() => {
+                    if (products && products.length > 0) {
+                        console.log('🔄 Tentando renderizar produtos disponíveis...');
+                        render();
+                    } else {
+                        console.error('❌ Não foi possível carregar produtos');
+                    }
+                }, 500);
+            });
+        }, 200);
+    }
 }
+
+// Iniciar
+startInit();
 

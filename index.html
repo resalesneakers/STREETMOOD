@@ -133,9 +133,18 @@
     </div>
 
     <!-- Scripts -->
-    <script src="scripts/main.js"></script>
-    <!-- Load products - will be used by main.js -->
+    <!-- Load products FIRST - will be used by main.js -->
     <script src="all_products_output.js"></script>
+    <script>
+        // Garantir que products está disponível globalmente
+        if (typeof products !== 'undefined') {
+            window.products = products;
+            console.log('✅ Products carregados:', window.products.length);
+        } else {
+            console.error('❌ Products não definido em all_products_output.js');
+        }
+    </script>
+    <script src="scripts/main.js"></script>
 </body>
 </html>
 

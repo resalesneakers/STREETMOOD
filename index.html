@@ -185,7 +185,7 @@
 
     <!-- Main Content -->
     <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <!-- Page Title Section -->
+            <!-- Page Title Section -->
         <div class="mb-8 text-center">
             <h2 class="text-xl md:text-2xl font-black mb-4 text-white leading-relaxed">
                 📦 Esta é a página onde encontras todos os sneakers disponíveis na <span class="text-red-500">STREETMOOD</span>.
@@ -197,28 +197,28 @@
             <button onclick="switchTab('all')" class="tab-button active px-6 py-3 font-bold text-sm uppercase tracking-wide text-white" data-tab="all">
                 Catálogo Completo
             </button>
-        </div>
+            </div>
 
         <!-- Filters -->
         <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8">
             <div class="relative">
-                <input 
-                    type="text" 
+                    <input 
+                        type="text" 
                     id="searchInput" 
                     placeholder="Pesquisar modelo..." 
                     class="search-input w-full px-4 py-3 rounded-xl text-white placeholder-gray-500 focus:outline-none"
                     oninput="filterProducts()"
-                >
-            </div>
+                    >
+                </div>
             <select id="sortSelect" onchange="filterProducts()" class="search-input w-full px-4 py-3 rounded-xl text-white focus:outline-none">
                 <option value="new">Mais recentes</option>
-                <option value="name">Ordenar por nome</option>
-                <option value="price-asc">Preço: menor → maior</option>
-                <option value="price-desc">Preço: maior → menor</option>
-            </select>
-        </div>
+                    <option value="name">Ordenar por nome</option>
+                    <option value="price-asc">Preço: menor → maior</option>
+                    <option value="price-desc">Preço: maior → menor</option>
+                </select>
+            </div>
 
-        <!-- Products Grid -->
+            <!-- Products Grid -->
         <div id="productsGrid" class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6">
             <!-- Products will be loaded here -->
         </div>
@@ -226,9 +226,9 @@
         <!-- Pagination -->
         <div id="pagination" class="flex justify-center items-center gap-2 mt-12 mb-8">
             <!-- Pagination buttons will be inserted here -->
-        </div>
+            </div>
 
-        <!-- Info Tags -->
+            <!-- Info Tags -->
         <div class="flex flex-wrap gap-3 mt-12 justify-center">
             <div class="glass-effect px-4 py-2 rounded-lg text-sm font-semibold">
                 🚚 Envio grátis
@@ -281,9 +281,9 @@
                     <!-- Image Viewer -->
                     <div id="modalViewer" class="bg-gray-800 rounded-xl overflow-hidden min-h-[350px] flex items-center justify-center">
                         <!-- Content will be inserted here -->
-                    </div>
+                </div>
 
-                    <!-- Product Details -->
+                <!-- Product Details -->
                     <div>
                         <div class="mb-4">
                             <p id="modalPrice" class="text-3xl font-black text-red-500 mb-2"></p>
@@ -306,11 +306,11 @@
                         >
                             📌 Reservar
                         </button>
-                        
+
                         <div class="glass-effect p-4 rounded-xl text-sm text-gray-300 space-y-2">
-                            <p>✓ Envio grátis • Caixa STREETMOOD incluída</p>
-                            <p>✓ Caixa original disponível (+5€)</p>
-                            <p>✓ Fotos antes do envio</p>
+                        <p>✓ Envio grátis • Caixa STREETMOOD incluída</p>
+                        <p>✓ Caixa original disponível (+5€)</p>
+                        <p>✓ Fotos antes do envio</p>
                         </div>
                         
                         <p class="text-center text-gray-500 text-sm mt-6 font-semibold">
@@ -705,14 +705,27 @@
                 );
             }
             
-            // Sort
-            if (sort === 'price-asc') {
-                filtered.sort((a, b) => (a.price_eur || 0) - (b.price_eur || 0));
-            } else if (sort === 'price-desc') {
-                filtered.sort((a, b) => (b.price_eur || 0) - (a.price_eur || 0));
-            } else if (sort === 'name') {
-                filtered.sort((a, b) => (a.name || '').localeCompare(b.name || ''));
-            }
+            // Sort - produtos com imagens primeiro
+            filtered.sort((a, b) => {
+                // Primeiro: produtos com imagem aparecem antes dos sem imagem
+                const aHasImage = a.image ? 1 : 0;
+                const bHasImage = b.image ? 1 : 0;
+                if (aHasImage !== bHasImage) {
+                    return bHasImage - aHasImage; // Com imagem primeiro
+                }
+                
+                // Depois: aplicar ordenação selecionada
+                if (sort === 'price-asc') {
+                    return (a.price_eur || 0) - (b.price_eur || 0);
+                } else if (sort === 'price-desc') {
+                    return (b.price_eur || 0) - (a.price_eur || 0);
+                } else if (sort === 'name') {
+                    return (a.name || '').localeCompare(b.name || '');
+                } else {
+                    // Mais recentes (por ID, maior ID = mais recente)
+                    return (b.id || 0) - (a.id || 0);
+                }
+            });
             
             currentProducts = filtered;
             currentPage = 1; // Reset to first page when filtering
@@ -920,6 +933,17 @@
                 console.log('✅ Produtos carregados:', window.products.length);
                 // Assign images to products (one image per product, best match only)
                 assignImagesToProducts();
+                // Sort products: with images first, then by ID (most recent first)
+                window.products.sort((a, b) => {
+                    // Primeiro: produtos com imagem aparecem antes dos sem imagem
+                    const aHasImage = a.image ? 1 : 0;
+                    const bHasImage = b.image ? 1 : 0;
+                    if (aHasImage !== bHasImage) {
+                        return bHasImage - aHasImage; // Com imagem primeiro
+                    }
+                    // Depois: ordenar por ID (mais recente primeiro)
+                    return (b.id || 0) - (a.id || 0);
+                });
                 // Show all products (with or without images)
                 currentProducts = window.products;
                 currentPage = 1;

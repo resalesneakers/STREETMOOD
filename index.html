@@ -193,7 +193,7 @@
         </div>
 
         <!-- Filters -->
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8">
             <div class="relative">
                 <input 
                     type="text" 
@@ -203,11 +203,6 @@
                     oninput="filterProducts()"
                 >
             </div>
-            <select id="filterSelect" onchange="filterProducts()" class="search-input w-full px-4 py-3 rounded-xl text-white focus:outline-none">
-                <option value="all">Todos os produtos</option>
-                <option value="stock">Em Stock</option>
-                <option value="drop">Fresh Drops</option>
-            </select>
             <select id="sortSelect" onchange="filterProducts()" class="search-input w-full px-4 py-3 rounded-xl text-white focus:outline-none">
                 <option value="new">Mais recentes</option>
                 <option value="name">Ordenar por nome</option>
@@ -438,54 +433,74 @@
                 console.log('✅ Mapeamento de imagens inicializado:', Object.keys(this.mapping).length, 'imagens');
             },
             
-            // Get image path for a product
+            // Get image path for a product - STRICT MATCHING (only best match)
             getImage: function(productName) {
                 // Normalize product name
                 const normalizedProduct = this.normalize(productName);
                 
-                // Try exact match first
+                let bestMatch = null;
+                let bestScore = 0;
+                
+                // Try to find the best matching image
                 for (const [imgName, path] of Object.entries(this.mapping)) {
                     const normalizedImg = this.normalize(imgName);
+                    let score = 0;
+                    
+                    // Exact match = highest score
                     if (normalizedImg === normalizedProduct) {
-                        return path;
+                        score = 100;
                     }
-                }
-                
-                // Try partial match - check if product name contains image name or vice versa
-                for (const [imgName, path] of Object.entries(this.mapping)) {
-                    const normalizedImg = this.normalize(imgName);
-                    if (normalizedProduct.includes(normalizedImg) || normalizedImg.includes(normalizedProduct)) {
-                        return path;
+                    // Very close match (one contains the other and they're similar length)
+                    else if ((normalizedProduct.includes(normalizedImg) || normalizedImg.includes(normalizedProduct)) && 
+                             Math.abs(normalizedProduct.length - normalizedImg.length) < 10) {
+                        // Calculate similarity based on common words
+                        const productWords = normalizedProduct.split(/\s+/).filter(w => w.length > 2);
+                        const imgWords = normalizedImg.split(/\s+/).filter(w => w.length > 2);
+                        const commonWords = productWords.filter(w => imgWords.includes(w));
+                        score = (commonWords.length / Math.max(productWords.length, imgWords.length)) * 80;
                     }
-                }
-                
-                // Try matching key words (remove common words)
-                const productWords = normalizedProduct.split(/\s+/).filter(p => 
-                    p.length > 2 && 
-                    !['retro', 'air', 'jordan', 'jordans', 'nike', 'high', 'mid', 'low', 'og', 'gs'].includes(p.toLowerCase())
-                );
-                
-                if (productWords.length > 0) {
-                    for (const [imgName, path] of Object.entries(this.mapping)) {
-                        const normalizedImg = this.normalize(imgName);
+                    // Partial match with key words
+                    else {
+                        const productWords = normalizedProduct.split(/\s+/).filter(p => 
+                            p.length > 3 && 
+                            !['retro', 'air', 'jordan', 'jordans', 'nike', 'high', 'mid', 'low', 'og', 'gs', 'white', 'black', 'blue', 'red'].includes(p.toLowerCase())
+                        );
                         const imgWords = normalizedImg.split(/\s+/).filter(p => 
-                            p.length > 2 && 
-                            !['retro', 'air', 'jordan', 'jordans', 'nike', 'high', 'mid', 'low', 'og', 'gs'].includes(p.toLowerCase())
+                            p.length > 3 && 
+                            !['retro', 'air', 'jordan', 'jordans', 'nike', 'high', 'mid', 'low', 'og', 'gs', 'white', 'black', 'blue', 'red'].includes(p.toLowerCase())
                         );
                         
-                        // Check if key words match
-                        const matches = productWords.filter(p => 
-                            imgWords.some(ip => ip.includes(p) || p.includes(ip) || ip === p)
-                        );
-                        
-                        // If at least 2 key words match, or if most words match
-                        if (matches.length >= Math.min(2, productWords.length) || 
-                            (productWords.length > 0 && matches.length / productWords.length >= 0.6)) {
-                            return path;
+                        if (productWords.length > 0 && imgWords.length > 0) {
+                            const matches = productWords.filter(p => 
+                                imgWords.some(ip => ip === p || (ip.includes(p) && p.length > 4) || (p.includes(ip) && ip.length > 4))
+                            );
+                            // Need at least 70% of key words to match
+                            if (matches.length / productWords.length >= 0.7 && matches.length >= 2) {
+                                score = (matches.length / Math.max(productWords.length, imgWords.length)) * 60;
+                            }
                         }
                     }
+                    
+                    if (score > bestScore) {
+                        bestScore = score;
+                        bestMatch = path;
+                    }
                 }
                 
+                // Only return if score is high enough (strict matching)
+                return bestScore >= 70 ? bestMatch : null;
+            },
+            
+            // Track which images are already assigned
+            assignedImages: new Set(),
+            
+            // Get image with assignment tracking (ensures one image per product only)
+            getImageWithTracking: function(productName) {
+                const image = this.getImage(productName);
+                if (image && !this.assignedImages.has(image)) {
+                    this.assignedImages.add(image);
+                    return image;
+                }
                 return null;
             }
         };
@@ -493,15 +508,11 @@
         // Initialize image mapping
         imageMap.init();
 
-        // Get product image
+        // Get product image - only assign to best matching product
         function getProductImage(product) {
-            // Try to find image by matching product name
-            const matchedImage = imageMap.getImage(product.name);
-            if (matchedImage) {
-                return matchedImage;
-            }
-            
-            return null;
+            // Use tracking to ensure each image is only assigned once
+            const matchedImage = imageMap.getImageWithTracking(product.name);
+            return matchedImage;
         }
 
         // Create placeholder HTML

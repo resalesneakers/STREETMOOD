@@ -35,7 +35,7 @@
         <div class="container">
             <!-- Page Title Section -->
             <div class="page-title-section">
-                <h2 class="page-title">📦 Esta é a página onde encontras todos os sneakers disponíveis na STREETMOOD — os drops, os clássicos e os mais raros.</h2>
+                <h2 class="page-title">📦 Todos os sneakers disponíveis na STREETMOOD — Encontra aqui os melhores modelos ao melhor preço.</h2>
             </div>
 
             <!-- Filters Section -->
@@ -134,14 +134,14 @@
 
     <!-- Scripts -->
     <!-- Load products FIRST - will be used by main.js -->
-    <script src="all_products_output.js"></script>
+    <script src="streetmood_products.js"></script>
     <script>
         // Garantir que products está disponível globalmente
         if (typeof products !== 'undefined') {
             window.products = products;
             console.log('✅ Products carregados:', window.products.length);
         } else {
-            console.error('❌ Products não definido em all_products_output.js');
+            console.error('❌ Products não definido em streetmood_products.js');
         }
     </script>
     <script src="scripts/main.js"></script>

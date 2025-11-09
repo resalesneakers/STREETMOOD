@@ -24,7 +24,7 @@ async function init() {
         }
         
         // Load products from external file
-        // Products should be loaded from all_products_output.js (loaded in HTML BEFORE this script)
+        // Products should be loaded from streetmood_products.js (loaded in HTML BEFORE this script)
         if (typeof window.products !== 'undefined' && Array.isArray(window.products)) {
             products = window.products;
             console.log('✅ Produtos carregados de window.products:', products.length);
@@ -54,7 +54,7 @@ async function init() {
                 
                 // Tentar carregar diretamente via fetch
                 try {
-                    const response = await fetch('all_products_output.js');
+                    const response = await fetch('streetmood_products.js');
                     if (response.ok) {
                         const text = await response.text();
                         // Executar o código JavaScript de forma segura
@@ -76,7 +76,7 @@ async function init() {
                             throw new Error('Produtos não encontrados após carregar script');
                         }
                     } else {
-                        throw new Error('Ficheiro all_products_output.js não encontrado');
+                        throw new Error('Ficheiro streetmood_products.js não encontrado');
                     }
                 } catch (e) {
                     console.error('❌ Erro ao carregar produtos:', e);
@@ -111,7 +111,12 @@ async function init() {
             }
             
             // Garantir que campos obrigatórios existem
-            if (!p.price_eur) p.price_eur = 70;
+            // Converter price string para price_eur número se necessário
+            if (p.price && typeof p.price === 'string') {
+                p.price_eur = parseInt(p.price.replace('€', '').trim()) || 70;
+            } else if (!p.price_eur) {
+                p.price_eur = 70;
+            }
             if (!p.size) p.size = "Tamanhos variados";
             if (!p.tipo) p.tipo = "stock";
             if (!p.desc) p.desc = "Estado: Novo. Envio grátis. Caixa STREETMOOD incluída.";
@@ -236,13 +241,13 @@ function gridItem(p) {
             <img src="${imagePath}" 
                  alt="${p.name}" 
                  class="product-image"
-                 onerror="this.parentElement.innerHTML='<div class=\\'product-placeholder\\'><div class=\\'placeholder-icon\\'>👟</div><p class=\\'placeholder-text\\'>🚫 Ainda sem foto — entra em contacto para saber mais!</p></div>'">
+                 onerror="this.parentElement.innerHTML='<div class=\\'product-placeholder\\'><div class=\\'placeholder-icon\\'>👟</div><p class=\\'placeholder-text\\'>Sem foto disponível — em breve!</p></div>'">
         `;
     } else {
         imageHTML = `
             <div class="product-placeholder">
                 <div class="placeholder-icon">👟</div>
-                <p class="placeholder-text">🚫 Ainda sem foto — entra em contacto para saber mais!</p>
+                <p class="placeholder-text">Sem foto disponível — em breve!</p>
             </div>
         `;
     }
@@ -295,12 +300,12 @@ function openModal(id) {
     
     // Show image (removed 3D viewer support)
     if (imagePath) {
-        mdImg.innerHTML = `<img src="${imagePath}" alt="${p.name}" style="width:100%;height:100%;object-fit:contain;" onerror="this.parentElement.innerHTML='<div class=\\'product-placeholder\\' style=\\'height:360px;\\'><div class=\\'placeholder-icon\\' style=\\'font-size:64px;\\'>👟</div><p class=\\'placeholder-text\\'>🚫 Ainda sem foto — entra em contacto para saber mais!</p></div>'">`;
+        mdImg.innerHTML = `<img src="${imagePath}" alt="${p.name}" style="width:100%;height:100%;object-fit:contain;" onerror="this.parentElement.innerHTML='<div class=\\'product-placeholder\\' style=\\'height:360px;\\'><div class=\\'placeholder-icon\\' style=\\'font-size:64px;\\'>👟</div><p class=\\'placeholder-text\\'>Sem foto disponível — em breve!</p></div>'">`;
     } else {
         mdImg.innerHTML = `
             <div class="product-placeholder" style="height:360px;">
                 <div class="placeholder-icon" style="font-size:64px;">👟</div>
-                <p class="placeholder-text">🚫 Ainda sem foto — entra em contacto para saber mais!</p>
+                <p class="placeholder-text">Sem foto disponível — em breve!</p>
             </div>
         `;
     }

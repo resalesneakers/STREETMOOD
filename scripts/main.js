@@ -373,7 +373,7 @@ function startInit() {
     // Aguardar que o DOM esteja pronto E que os produtos estejam carregados
     if (document.readyState === 'loading') {
         document.addEventListener('DOMContentLoaded', () => {
-            // Aguardar um pouco mais para garantir que all_products_output.js foi carregado
+            // Aguardar um pouco mais para garantir que streetmood_products.js foi carregado
             setTimeout(() => {
                 init().catch(error => {
                     console.error('❌ Erro fatal ao inicializar:', error);

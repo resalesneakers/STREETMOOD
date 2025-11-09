@@ -307,8 +307,7 @@
 
     <script>
         // Products data
-        // NOTE: To load all products, replace this array with the full products array from the original file
-        // Or load from a CSV/external JSON file
+        // NOTE: To load all products, replace this array with the full products array from streetmood_products.js
         const products = [
             {"id": 1, "name": "Air Jordan 10 - White brown40-47", "buy_usd": 39.0, "price_eur": 90, "price_box_eur": 95, "size": "40-47", "image": "", "link": "https://www.ubzy.ru/product/air-jordan-10-white-brown40-47/", "tipo": "stock", "desc": ""},
             {"id": 2, "name": "Air Jordan 10 - White black40-47", "buy_usd": 39.0, "price_eur": 90, "price_box_eur": 95, "size": "40-47", "image": "", "link": "https://www.ubzy.ru/product/air-jordan-10-white-black40-47/", "tipo": "stock", "desc": ""},
@@ -326,9 +325,7 @@
             {"id": 14, "name": "Air Jordan 10 - black white blue40-47", "buy_usd": 39.0, "price_eur": 90, "price_box_eur": 95, "size": "40-47", "image": "", "link": "https://www.ubzy.ru/product/air-jordan-10-black-white-blue40-47/", "tipo": "stock", "desc": ""}
         ];
         
-        // TODO: Replace this array with the full products list from the original file (325 products)
-        // Or load from an external file/CSV using fetch()
-        // Example: fetch('products.json').then(r => r.json()).then(data => products = data);
+        // TODO: Replace this array with the full products list from streetmood_products.js
 
         let currentProducts = products;
         let activeTab = 'all';

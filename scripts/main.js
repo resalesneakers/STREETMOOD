@@ -1,6 +1,7 @@
 // STREETMOOD - Main JavaScript Logic
 
-let products = [];
+// products será carregado de streetmood_products.js (já declarado lá)
+// Usar window.products ou products global
 let imgMap = {};
 let currentProduct = null;
 
@@ -25,13 +26,13 @@ async function init() {
         
         // Load products from external file
         // Products should be loaded from streetmood_products.js (loaded in HTML BEFORE this script)
+        // products já foi declarado em streetmood_products.js, apenas usar a referência global
         if (typeof window.products !== 'undefined' && Array.isArray(window.products)) {
-            products = window.products;
-            console.log('✅ Produtos carregados de window.products:', products.length);
+            // Usar window.products diretamente
+            console.log('✅ Produtos carregados de window.products:', window.products.length);
         } else if (typeof products !== 'undefined' && Array.isArray(products)) {
             // Tentar variável global products (sem window)
             window.products = products;
-            products = products;
             console.log('✅ Produtos carregados de products:', products.length);
         } else {
             // Aguardar um pouco para garantir que o script foi carregado
@@ -44,8 +45,7 @@ async function init() {
             }
             
             if (typeof window.products !== 'undefined' && Array.isArray(window.products)) {
-                products = window.products;
-                console.log('✅ Produtos carregados após espera:', products.length);
+                console.log('✅ Produtos carregados após espera:', window.products.length);
             } else if (typeof products !== 'undefined' && Array.isArray(products)) {
                 window.products = products;
                 console.log('✅ Produtos carregados após espera (variável global):', products.length);
@@ -66,11 +66,9 @@ async function init() {
                         await new Promise(resolve => setTimeout(resolve, 200));
                         
                         if (typeof window.products !== 'undefined' && Array.isArray(window.products)) {
-                            products = window.products;
-                            console.log('✅ Produtos carregados via fetch:', products.length);
+                            console.log('✅ Produtos carregados via fetch:', window.products.length);
                         } else if (typeof products !== 'undefined' && Array.isArray(products)) {
                             window.products = products;
-                            products = products;
                             console.log('✅ Produtos carregados via fetch (variável global):', products.length);
                         } else {
                             throw new Error('Produtos não encontrados após carregar script');
@@ -86,10 +84,16 @@ async function init() {
             }
         }
         
+        // Garantir que products está disponível globalmente
+        // products já foi declarado em streetmood_products.js, usar window.products
+        let products = window.products || [];
+        
         // Verificar se produtos foram carregados
         if (!products || products.length === 0) {
             console.error('❌ ERRO: Nenhum produto foi carregado!');
             loadDefaultProducts();
+            // Atualizar referência após carregar produtos padrão
+            products = window.products || [];
         }
         
         console.log('📦 Total de produtos carregados:', products.length);
@@ -125,6 +129,10 @@ async function init() {
         console.log(`✅ Carregados ${products.length} produtos`);
         console.log(`✅ ${Object.keys(imgMap).length} produtos com imagens mapeadas`);
         
+        // Garantir que products está disponível globalmente para outras funções
+        // Atualizar window.products com os produtos processados
+        window.products = products;
+        
         // Initial render - aguardar um pouco para garantir que DOM está pronto
         setTimeout(() => {
             render();
@@ -159,7 +167,7 @@ function loadProductsFromFile(filePath) {
 
 // Default products (fallback)
 function loadDefaultProducts() {
-    products = [
+    window.products = [
         {"id": 1, "name": "Air Jordan 10 - White brown40-47", "buy_usd": 39.0, "price_eur": 90, "price_box_eur": 95, "size": "40-47", "image": "", "link": "https://www.ubzy.ru/product/air-jordan-10-white-brown40-47/", "tipo": "stock", "desc": "Produto premium importado. Envio grátis. Caixa STREETMOOD incluída."},
         {"id": 108, "name": "Air Jordan 4 'Pure Money'", "buy_usd": 55.0, "price_eur": 115, "price_box_eur": 120, "size": "40-47", "image": "", "link": "", "tipo": "drop", "desc": "Fresh Drop exclusivo! Air Jordan 4 em edição limitada. Visualizador 3D disponível."}
     ];
@@ -170,6 +178,9 @@ function render() {
     const q = document.getElementById('q')?.value?.toLowerCase() || '';
     const f = document.getElementById('filter')?.value || 'all';
     const s = document.getElementById('sort')?.value || 'name';
+    
+    // Obter products da variável global
+    const products = window.products || [];
     
     // Garantir que products está carregado
     if (!products || products.length === 0) {
@@ -269,6 +280,7 @@ function gridItem(p) {
 
 // Open modal with product details
 function openModal(id) {
+    const products = window.products || [];
     const p = products.find(x => x.id === id);
     if (!p) return;
     

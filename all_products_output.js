@@ -1,4 +1,7 @@
-const products = [
+// STREETMOOD Products - Main product list
+// This file contains all products from ubzy_products.csv
+if (typeof products === 'undefined') {
+    var products = [
     {"id": 1, "name": "Air Jordan 10 - White brown40-47", "price_eur": 90, "size": "40-47", "tipo": "stock", "desc": "Estado: Novo. Envio grátis. Caixa STREETMOOD incluída."},
     {"id": 2, "name": "Air Jordan 10 - White black40-47", "price_eur": 90, "size": "40-47", "tipo": "stock", "desc": "Estado: Novo. Envio grátis. Caixa STREETMOOD incluída."},
     {"id": 3, "name": "Air Jordan 10 - White black red40-47", "price_eur": 90, "size": "40-47", "tipo": "stock", "desc": "Estado: Novo. Envio grátis. Caixa STREETMOOD incluída."},
@@ -468,3 +471,9 @@ const products = [
     {"id": 470, "name": "Nike ACG Mountain Fly 2 Gerry", "price_eur": 70, "size": "Tamanhos variados", "tipo": "stock", "desc": "Estado: Novo. Envio grátis. Caixa STREETMOOD incluída."},
     {"id": 471, "name": "Nike ACG Mountain Fly 2", "price_eur": 70, "size": "Tamanhos variados", "tipo": "stock", "desc": "Estado: Novo. Envio grátis. Caixa STREETMOOD incluída."}
 ];
+}
+
+// Garantir que products está disponível globalmente
+if (typeof window !== 'undefined') {
+    window.products = products;
+}

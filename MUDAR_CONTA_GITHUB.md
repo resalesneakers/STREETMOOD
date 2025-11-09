@@ -1,12 +1,27 @@
-# 📦 Guia: Mudar para Nova Conta GitHub
+# 📦 Guia: Upload STREETMOOD para GitHub
 
-## Passo 1: Criar Novo Repositório no GitHub
+## 🎯 Repositório de Destino
 
-1. Acede à tua **nova conta GitHub**
-2. Clica em **"New repository"** (ou **"+"** → **"New repository"**)
-3. Dá um nome ao repositório (ex: `streetmood` ou `streetmood-website`)
-4. **NÃO** inicializes com README, .gitignore ou licença
-5. Clica em **"Create repository"**
+**URL:** https://github.com/srteetm00d-png/streetm00d_
+
+## ⚡ Método Rápido (Recomendado)
+
+1. Abre PowerShell na pasta `STREETMOOD`
+2. Executa:
+   ```powershell
+   .\upload-para-github.ps1
+   ```
+3. Segue as instruções no ecrã
+
+## 📋 Método Manual (Passo a Passo)
+
+### Passo 1: Verificar se o Repositório Existe
+
+O repositório já existe em: https://github.com/srteetm00d-png/streetm00d_
+
+Se não tiveres acesso, certifica-te que:
+- Estás logado na conta `srteetm00d-png`
+- Tens permissões de escrita no repositório
 
 ## Passo 2: Instalar Git (se necessário)
 
@@ -31,14 +46,23 @@ git add .
 git commit -m "Initial commit - STREETMOOD website com 350 produtos"
 ```
 
-## Passo 4: Ligar à Nova Conta GitHub
+## Passo 4: Ligar ao Repositório GitHub
 
 ```powershell
-# Adicionar remote da nova conta (substitui USERNAME pelo teu novo username)
-git remote add origin https://github.com/USERNAME/NOME_DO_REPOSITORIO.git
+# Adicionar remote (ou atualizar se já existir)
+git remote add origin https://github.com/srteetm00d-png/streetm00d_.git
+
+# Se já existe remote, atualizar:
+git remote set-url origin https://github.com/srteetm00d-png/streetm00d_.git
 
 # Verificar se está correto
 git remote -v
+```
+
+**Deve mostrar:**
+```
+origin  https://github.com/srteetm00d-png/streetm00d_.git (fetch)
+origin  https://github.com/srteetm00d-png/streetm00d_.git (push)
 ```
 
 ## Passo 5: Fazer Push para GitHub
@@ -52,18 +76,18 @@ git push -u origin main
 ```
 
 **Nota:** Se pedir credenciais:
-- Username: teu novo username GitHub
-- Password: usa um **Personal Access Token** (não a password normal)
+- **Username:** `srteetm00d-png`
+- **Password:** usa um **Personal Access Token** (não a password normal)
 
 ### Como criar Personal Access Token:
 
-1. GitHub → Settings → Developer settings → Personal access tokens → Tokens (classic)
-2. Clica "Generate new token (classic)"
+1. Vai a: https://github.com/settings/tokens
+2. Clica **"Generate new token (classic)"**
 3. Dá um nome (ex: "STREETMOOD")
-4. Seleciona scopes: `repo` (tudo)
-5. Clica "Generate token"
-6. **Copia o token** (só aparece uma vez!)
-7. Usa esse token como password
+4. Seleciona scopes: **`repo`** (marca tudo em repo)
+5. Clica **"Generate token"**
+6. **Copia o token** (só aparece uma vez! Guarda-o bem)
+7. Usa esse token como password quando fizeres push
 
 ## Passo 6: Verificar
 
@@ -80,7 +104,7 @@ Se já tens um repositório Git ligado à conta antiga:
 git remote remove origin
 
 # Adicionar novo remote
-git remote add origin https://github.com/NOVO_USERNAME/NOME_DO_REPOSITORIO.git
+git remote add origin https://github.com/srteetm00d-png/streetm00d_.git
 
 # Verificar
 git remote -v
@@ -107,10 +131,11 @@ Certifica-te que estes ficheiros estão incluídos:
 
 ## 🚀 Depois do Upload
 
-1. Vai a **Settings** do repositório
-2. **Pages** → **Source**: seleciona `main` branch
-3. Clica **Save**
-4. O site ficará disponível em: `https://NOVO_USERNAME.github.io/NOME_DO_REPOSITORIO/`
+1. Vai a: https://github.com/srteetm00d-png/streetm00d_/settings/pages
+2. **Source**: seleciona `main` branch
+3. **Folder**: `/ (root)`
+4. Clica **Save**
+5. O site ficará disponível em: **https://srteetm00d-png.github.io/streetm00d_/**
 
 ## 💡 Dica Rápida
 
